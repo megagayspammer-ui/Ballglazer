@@ -19,7 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.content.ContextCompat
-import com.example.ui.RadarScreen
+import com.example.ui.SuperAppScreen
 import com.example.ui.theme.MyApplicationTheme
 import com.example.viewmodel.RadarViewModel
 
@@ -74,7 +74,7 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        RadarScreen(
+        SuperAppScreen(
             viewModel = viewModel,
             modifier = Modifier.fillMaxSize()
         )

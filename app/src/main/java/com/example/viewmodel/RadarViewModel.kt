@@ -53,6 +53,12 @@ class RadarViewModel(application: Application) : AndroidViewModel(application) {
     private val compassSensor = CompassSensor(application)
     private val scannerManager = RfScannerManager(application, viewModelScope)
 
+    val elixirEngine = com.example.elixir.ElixirEngine(viewModelScope)
+    val aiManager = com.example.ai.LocalAiManager(application, viewModelScope)
+
+    val elixirState: StateFlow<com.example.elixir.ElixirTrackerState> = elixirEngine.state
+    val aiState: StateFlow<com.example.ai.LocalAiState> = aiManager.state
+
     private val _filter = MutableStateFlow(DeviceFilter.ALL)
     private val _searchQuery = MutableStateFlow("")
     private val _rssiThreshold = MutableStateFlow(-95)

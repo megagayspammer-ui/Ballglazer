@@ -1,6 +1,6 @@
 {
-  "name": "NearMap Radar",
-  "description": "Real-time RF radar for nearby Bluetooth, BLE and Wi-Fi devices with customizable nicknames, signal proximity mapping, and orientation tracking.",
+  "name": "OmniHub",
+  "description": "Multi-utility suite featuring RF NearMap Radar, Clash Royale Elixir counter & overlay assistant, and Local AI model manager.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,6 +1,6 @@
-# NearMap Radar 📡
+# OmniHub ⚡
 
-> Real-time RF proximity radar & spatial sonar for nearby Bluetooth (BLE & Classic) and Wi-Fi devices with customizable nicknames, orientation compass sync, and live signal telemetry.
+> Multi-utility super application featuring **NearMap RF Radar**, **Clash Royale Elixir Master** (card database, 1X/2X/3X regeneration tracking, manual/auto card deduction, and floating HUD overlay), and **Local On-Device AI** (GGUF model downloader & offline LLM inference).
 
 ---
 
@@ -8,45 +8,48 @@
 
 A prebuilt, ready-to-install Android APK is included directly inside this repository:
 
-👉 **[Download NearMap-Radar.apk](./apk/NearMap-Radar.apk)** (File path: `apk/NearMap-Radar.apk`)
+👉 **[Download OmniHub.apk](./apk/OmniHub.apk)** (File path: `apk/OmniHub.apk`)
 
 ### Installation Steps on Android:
-1. Download `NearMap-Radar.apk` directly to your Android device from this repo.
+1. Download `OmniHub.apk` directly to your Android device from this repo.
 2. Tap the downloaded file in your notification tray or **Files/Downloads** manager.
 3. If prompted by Android, grant **Install unknown apps** permission for your browser or file manager.
-4. Tap **Install** and launch **NearMap Radar**!
+4. Tap **Install** and launch **OmniHub**!
 
 ---
 
-## 🌟 Key Features
+## 🌟 Modules in OmniHub
 
-- **Polar Sonar & Spatial Proximity Map**:
-  - Live 360° sweeping radar with phosphor trailing glow.
-  - Concentric range distance rings (5m, 15m, 25m, 50m) with automatic distance scaling.
-  - Interactive radar blips: Tap any detected blip to view live telemetry and assign names.
-- **Hardware Sensor Compass Sync**:
-  - Integrated with the device's magnetometer and rotation vector sensors.
-  - Turn and rotate your phone physically to orient the radar map to match your real-world heading.
-- **Custom Device Nicknames & Local Persistence**:
-  - Give any detected Bluetooth or Wi-Fi device a friendly alias (e.g., *"My Laptop"*, *"Living Room TV"*, *"Office Wi-Fi"*, *"Noise-Canceling Headphones"*).
-  - Preserved locally across app launches using Room Database (`DeviceAliasEntity`).
-  - Saved nicknames automatically highlight devices in glowing emerald green on the radar screen.
-- **Live Signal Telemetry & Distance Physics**:
-  - **Log-Distance Path Loss Model**: Estimates physical distance ($d = 10^{\frac{TxPower - RSSI}{10 \cdot n}}$) in both meters and feet.
-  - **Live RSSI Sparkline Graph**: Real-time signal fluctuation chart tracking RF variations over time.
-  - Proximity categories: *Immediate (< 1.5m)*, *Near (1.5 - 5m)*, *Mid-Range (5 - 15m)*, and *Far (> 15m)*.
-- **Transparent RF Accuracy Notice**:
-  - Educational guidance explaining why RF signal strength (RSSI) fluctuates with physical walls, obstacles, and human body attenuation.
-- **Dual View Modes**:
-  - Switch seamlessly between the **Radar Sonar** map and the categorized **Device List**.
-  - Quick filter chips: *All*, *Bluetooth*, *Wi-Fi*, and *Named Only*.
-  - Search by alias, broadcast name, MAC address, or notes.
+### 1. ⚔️ Clash Royale Elixir Master & Floating Overlay
+- **Card Database**: Full stats, elixir costs, types (Troops, Spells, Buildings), rarities, and emoji icons for cards across all elixir costs (1 to 9).
+- **Real-Time Elixir Physics**:
+  - Accurate 10-segment fluid elixir gauge.
+  - Matches authentic regeneration rates: 1X (2.8s per elixir bar), 2X (1.4s per bar at 2:00 mark), and 3X (0.93s per bar in triple elixir / overtime).
+  - Tracks **Elixir Advantage** (lead/deficit relative to your own supply) and warns if opponent is leaking elixir.
+- **Manual Mode**: Tap any card card in the arena deck grid to immediately subtract that card's cost (e.g., tap P.E.K.K.A → -7 Elixir; tap Hog Rider → -4 Elixir).
+- **Auto Screen Analyzer**: Optical detection engine watching for card deployment events on screen and automatically detecting 2X/3X Elixir banners to accelerate regeneration.
+- **Floating HUD Overlay**: Uses `SYSTEM_ALERT_WINDOW` permission to float directly over Clash Royale gameplay so you never have to tab out.
+- **Match Play History**: Chronological log of deployed enemy cards with timestamps and elixir deltas.
+
+### 2. 🧠 Local AI Model Hub & Offline Inference
+- **GGUF Model Downloader**: Browse and download popular quantized open weights models directly onto local device storage:
+  - *Qwen 2.5 (0.5B Chat)* - Ultra-lightweight & lightning fast.
+  - *TinyLlama (1.1B Chat)* - High-efficiency general reasoning.
+  - *Gemma 2 (2B Instruct)* - Google DeepMind analytical weights.
+  - *Phi-3 Mini (3.8B 4K)* - State-of-the-art small language model.
+- **Offline Inference Playground**: Chat with loaded models completely offline with streaming token output.
+- **Parameter Controls**: Adjust temperature (0.1 - 1.5) and customize system prompts.
+- **Storage Management**: Visual breakdown of model cache vs. free device storage.
+
+### 3. 📡 NearMap RF Radar & Device Proximity
+- **360° Sonar Scanner**: Sweeping beam tracking nearby Bluetooth (BLE & Classic) and Wi-Fi networks.
+- **Custom Nicknames**: Give any detected device a friendly name (e.g., *"My Laptop"*, *"Living Room TV"*), saved permanently in a local **Room Database**.
+- **Hardware Compass Sync**: Point and rotate your phone physically to orient the radar sweep to real-world magnetic north.
+- **Log-Distance RF Path Loss**: Calculates physical proximity in meters and feet with live RSSI sparkline telemetry.
 
 ---
 
 ## 🛠️ Building from Source
-
-To compile the APK yourself using Android Studio or command-line Gradle:
 
 ```bash
 # Clone the repository
@@ -57,4 +60,4 @@ cd <repo-folder>
 gradle :app:assembleDebug
 ```
 
-The resulting APK will be placed at `app/build/outputs/apk/debug/app-debug.apk`.
+The compiled APK will be located at `app/build/outputs/apk/debug/app-debug.apk`.

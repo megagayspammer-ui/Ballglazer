@@ -27,6 +27,11 @@
     <!-- Haptic feedback for radar ping detection -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Overlay & Game Tracker Permissions -->
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" tools:targetApi="upside_down_cake" />
+
     <!-- Hardware features -->
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
     <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />

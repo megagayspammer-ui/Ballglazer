@@ -22,6 +22,6 @@ dependencyResolutionManagement {
   }
 }
 
-rootProject.name = "NearMap Radar"
+rootProject.name = "OmniHub"
 
 include(":app")
