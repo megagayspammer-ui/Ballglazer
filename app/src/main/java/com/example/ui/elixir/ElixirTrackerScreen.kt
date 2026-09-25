@@ -117,7 +117,9 @@ import kotlin.math.roundToInt
 @Composable
 fun ElixirMainScreen(
     viewModel: ElixirViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onStartScreenCapture: () -> Unit = {},
+    onStopScreenCapture: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -199,7 +201,8 @@ fun ElixirMainScreen(
                                         context.startActivity(intent)
                                     }
                                 },
-                                onToggleAuto = { viewModel.toggleAutoDetection(it) },
+                                onStartScreenCapture = onStartScreenCapture,
+                                onStopScreenCapture = onStopScreenCapture,
                                 showFloatingHud = showFloatingHud,
                                 onToggleFloatingHud = { viewModel.toggleFloatingHudPreview(it) }
                             )
@@ -361,7 +364,7 @@ private fun MatchDashboardHeader(
                 }
             }
 
-            // Anti-Multi-Count Notice / Action Banner
+            // Notice / Multi-Count / Scanner Banner
             state.lastNoticeMessage?.let { notice ->
                 Spacer(modifier = Modifier.height(4.dp))
                 Surface(
@@ -1105,10 +1108,14 @@ private fun OverlayAutoTab(
     state: ElixirTrackerState,
     hasOverlayPermission: Boolean,
     onRequestPermission: () -> Unit,
-    onToggleAuto: (Boolean) -> Unit,
+    onStartScreenCapture: () -> Unit,
+    onStopScreenCapture: () -> Unit,
     showFloatingHud: Boolean,
     onToggleFloatingHud: (Boolean) -> Unit
 ) {
+    val context = LocalContext.current
+    val crIntent = remember { context.packageManager.getLaunchIntentForPackage("com.supercell.clashroyale") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -1116,6 +1123,134 @@ private fun OverlayAutoTab(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        // Real Screen Capture & Live Optical Analyzer Section
+        Surface(
+            color = EsportsCard,
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .border(
+                    1.dp,
+                    if (state.isMediaProjectionActive) PositiveGreen.copy(alpha = 0.6f) else EsportsBorder,
+                    RoundedCornerShape(12.dp)
+                )
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.SmartDisplay,
+                            contentDescription = null,
+                            tint = if (state.isMediaProjectionActive) PositiveGreen else ElixirBright,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text(
+                                text = "Live Screen Capture & OCR",
+                                color = DarkTextPrimary,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "MediaProjection Arena Frame Scanner",
+                                color = DarkTextSecondary,
+                                fontSize = 11.sp
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .clip(CircleShape)
+                            .background(if (state.isMediaProjectionActive) PositiveGreen else Color.Gray)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Text(
+                    text = "Uses Android's real MediaProjection API to capture live gameplay frames, detect when a battle starts, auto-deduct deployed enemy cards, and track 2X/3X banners with a 16s anti-multi-count cooldown.",
+                    color = DarkTextSecondary,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Real Capture Start / Stop Action Button
+                if (state.isMediaProjectionActive) {
+                    Button(
+                        onClick = onStopScreenCapture,
+                        colors = ButtonDefaults.buttonColors(containerColor = DeficitRed),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth().testTag("btn_stop_screen_capture")
+                    ) {
+                        Icon(Icons.Default.Pause, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Stop Live Screen Capture", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                } else {
+                    Button(
+                        onClick = onStartScreenCapture,
+                        colors = ButtonDefaults.buttonColors(containerColor = ElixirBright),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth().testTag("btn_start_screen_capture")
+                    ) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Start Live Screen Capture (MediaProjection)", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                if (crIntent != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { context.startActivity(crIntent) },
+                        colors = ButtonDefaults.buttonColors(containerColor = GoldAccent),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth().testTag("btn_launch_clash_royale")
+                    ) {
+                        Icon(Icons.Default.OpenInNew, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Launch Clash Royale Game", color = Color.Black, fontWeight = FontWeight.Bold)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Surface(
+                    color = Color(0xFF0F1522),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(if (state.isMediaProjectionActive) PositiveGreen else Color.Gray)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = state.autoDetectionStatus,
+                            color = if (state.isMediaProjectionActive) DarkTextPrimary else DarkTextMuted,
+                            fontSize = 11.sp,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                }
+            }
+        }
+
         // Floating HUD Overlay Config
         Surface(
             color = EsportsCard,
@@ -1193,98 +1328,12 @@ private fun OverlayAutoTab(
                             modifier = Modifier.testTag("btn_toggle_hud_preview")
                         ) {
                             Text(
-                                text = if (showFloatingHud) "Hide HUD" else "Test Floating HUD",
+                                text = if (showFloatingHud) "Hide Preview" else "Test HUD Overlay",
                                 color = Color.Black,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 12.sp
                             )
                         }
-                    }
-                }
-            }
-        }
-
-        // Screen Capture & OCR Card Detection
-        Surface(
-            color = EsportsCard,
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .border(1.dp, EsportsBorder, RoundedCornerShape(12.dp))
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.SmartDisplay,
-                            contentDescription = null,
-                            tint = ElixirBright,
-                            modifier = Modifier.size(24.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Column {
-                            Text(
-                                text = "Auto Screen Analyzer",
-                                color = DarkTextPrimary,
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            Text(
-                                text = "Card Detection with Multi-Count Cooldown",
-                                color = DarkTextSecondary,
-                                fontSize = 11.sp
-                            )
-                        }
-                    }
-
-                    Switch(
-                        checked = state.isAutoDetectionEnabled,
-                        onCheckedChange = { onToggleAuto(it) },
-                        colors = SwitchDefaults.colors(
-                            checkedThumbColor = Color.Black,
-                            checkedTrackColor = ElixirBright
-                        ),
-                        modifier = Modifier.testTag("switch_auto_detection")
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "Continuously watches gameplay via MediaProjection to detect deployed enemy cards and recognizes 2X/3X banners. Includes 16-second on-field presence cooldown so units walking across lanes are never multi-counted.",
-                    color = DarkTextSecondary,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Surface(
-                    color = Color(0xFF0F1522),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(10.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(if (state.isAutoDetectionEnabled) PositiveGreen else Color.Gray)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = state.autoDetectionStatus,
-                            color = if (state.isAutoDetectionEnabled) DarkTextPrimary else DarkTextMuted,
-                            fontSize = 11.sp,
-                            fontFamily = FontFamily.Monospace
-                        )
                     }
                 }
             }

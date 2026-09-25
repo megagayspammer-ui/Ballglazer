@@ -18,7 +18,6 @@ import kotlinx.coroutines.launch
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
-import kotlin.random.Random
 
 enum class ElixirMultiplier(val label: String, val secondsPerElixir: Float) {
     ONE_X("1X Elixir", 2.8f),
@@ -56,7 +55,8 @@ data class ElixirTrackerState(
     val matchElapsedMs: Long = 0L,
     val isAutoDetectionEnabled: Boolean = false,
     val isOverlayPermissionGranted: Boolean = false,
-    val autoDetectionStatus: String = "Standby • Ready for screen analysis",
+    val isMediaProjectionActive: Boolean = false,
+    val autoDetectionStatus: String = "Ready for live Clash Royale screen capture",
     val cardHistory: List<CardPlayEvent> = emptyList(),
     val opponentDeck: List<ClashCard> = emptyList(),
     val detectedMultiplierTag: String? = null,
@@ -111,20 +111,17 @@ class ElixirEngine(
     companion object {
         private const val MIN_SAME_CARD_TAP_DEBOUNCE_MS = 650L
         private const val MIN_GENERAL_TAP_DEBOUNCE_MS = 150L
-        private const val AUTO_DETECT_CARD_COOLDOWN_MS = 16000L
     }
 
     private val _state = MutableStateFlow(ElixirTrackerState())
     val state: StateFlow<ElixirTrackerState> = _state.asStateFlow()
 
     private var tickerJob: Job? = null
-    private var autoDetectJob: Job? = null
     private var lastLeakAlertTimestamp = 0L
 
     // Anti-Multi-Count Guards
     private var lastTappedCardId: String? = null
     private var lastTappedTimestamp = 0L
-    private val autoDetectedCardCooldowns = mutableMapOf<String, Long>()
 
     fun startMatch() {
         _state.value = _state.value.copy(
@@ -139,11 +136,7 @@ class ElixirEngine(
             isOpponentLeaking = false,
             lastNoticeMessage = "Match started (5.0 Elixir)"
         )
-        autoDetectedCardCooldowns.clear()
         startTicker()
-        if (_state.value.isAutoDetectionEnabled) {
-            startAutoDetectionLoop()
-        }
     }
 
     fun pauseOrResumeMatch() {
@@ -155,22 +148,19 @@ class ElixirEngine(
         )
         if (newRunning) {
             startTicker()
-            if (current.isAutoDetectionEnabled) startAutoDetectionLoop()
         } else {
             tickerJob?.cancel()
-            autoDetectJob?.cancel()
         }
     }
 
     fun resetMatch() {
         tickerJob?.cancel()
-        autoDetectJob?.cancel()
-        autoDetectedCardCooldowns.clear()
         lastTappedCardId = null
         lastTappedTimestamp = 0L
         _state.value = ElixirTrackerState(
             isOverlayPermissionGranted = _state.value.isOverlayPermissionGranted,
             isAutoDetectionEnabled = _state.value.isAutoDetectionEnabled,
+            isMediaProjectionActive = _state.value.isMediaProjectionActive,
             hapticEnabled = _state.value.hapticEnabled,
             autoStartOnFirstPlay = _state.value.autoStartOnFirstPlay,
             lastNoticeMessage = "Match reset"
@@ -203,9 +193,8 @@ class ElixirEngine(
         // 1. Check Anti-Multi-Count Debounce
         if (_state.value.antiMultiCountActive) {
             if (card.id == lastTappedCardId && (now - lastTappedTimestamp) < MIN_SAME_CARD_TAP_DEBOUNCE_MS) {
-                // Multi-tap detected! Suppress duplicate deduction.
                 _state.value = _state.value.copy(
-                    lastNoticeMessage = "Suppressed rapid double-tap on ${card.name} (Anti-Multi-Count)"
+                    lastNoticeMessage = "Suppressed rapid duplicate on ${card.name} (Anti-Multi-Count)"
                 )
                 return false
             }
@@ -280,10 +269,6 @@ class ElixirEngine(
         )
     }
 
-    /**
-     * Undoes the last recorded card event and refunds the exact deducted elixir.
-     * Essential safety net for any accidental card taps.
-     */
     fun undoLastCardPlay(): Boolean {
         val current = _state.value
         if (current.cardHistory.isEmpty()) return false
@@ -295,8 +280,6 @@ class ElixirEngine(
 
         if (lastEvent.isOpponent) {
             val refundedElixir = min(10f, current.opponentElixir + lastEvent.card.cost)
-
-            // Recompute discovered deck in case this was the only instance of that card
             val remainingOpponentCardIds = remainingHistory.filter { it.isOpponent }.map { it.card.id }.toSet()
             val recomputedDeck = current.opponentDeck.filter { remainingOpponentCardIds.contains(it.id) }
 
@@ -337,17 +320,19 @@ class ElixirEngine(
         )
     }
 
-    fun toggleAutoDetection(enabled: Boolean) {
+    fun updateVisionStatus(status: String) {
         _state.value = _state.value.copy(
-            isAutoDetectionEnabled = enabled,
-            autoDetectionStatus = if (enabled) "Screen Analyzer Active • Monitoring arena cards & multipliers" else "Manual Mode",
-            lastNoticeMessage = if (enabled) "Auto Screen Analyzer enabled" else "Auto Screen Analyzer disabled"
+            autoDetectionStatus = status,
+            lastNoticeMessage = status
         )
-        if (enabled && _state.value.isMatchRunning) {
-            startAutoDetectionLoop()
-        } else {
-            autoDetectJob?.cancel()
-        }
+    }
+
+    fun setMediaProjectionActive(active: Boolean) {
+        _state.value = _state.value.copy(
+            isMediaProjectionActive = active,
+            isAutoDetectionEnabled = active,
+            autoDetectionStatus = if (active) "Live Screen Capture & Frame Analyzer Active" else "Screen Analyzer Stopped"
+        )
     }
 
     fun setOverlayPermissionGranted(granted: Boolean) {
@@ -393,58 +378,6 @@ class ElixirEngine(
                     multiplier = updatedMultiplier,
                     isOpponentLeaking = isLeaking
                 )
-            }
-        }
-    }
-
-    /**
-     * Automated Screen Analyzer loop with strict Anti-Multi-Counting:
-     * - Uses cooldown tracking per card (16 seconds) so on-field troops walking across the lane are never multi-counted.
-     */
-    private fun startAutoDetectionLoop() {
-        autoDetectJob?.cancel()
-        autoDetectJob = scope.launch {
-            while (isActive) {
-                delay(Random.nextLong(4000, 7500))
-                if (!_state.value.isMatchRunning || !_state.value.isAutoDetectionEnabled) continue
-
-                val now = System.currentTimeMillis()
-                val currentSecs = _state.value.matchTimeSeconds
-
-                // Check for 2X / 3X tag detection on arena screen
-                if (currentSecs in 120..124 && _state.value.multiplier != ElixirMultiplier.TWO_X) {
-                    _state.value = _state.value.copy(
-                        multiplier = ElixirMultiplier.TWO_X,
-                        detectedMultiplierTag = "2X ELIXIR TAG DETECTED",
-                        autoDetectionStatus = "OCR: 2X Elixir Banner Identified (Regen 1.4s/bar)"
-                    )
-                } else if (currentSecs >= 240 && _state.value.multiplier != ElixirMultiplier.THREE_X) {
-                    _state.value = _state.value.copy(
-                        multiplier = ElixirMultiplier.THREE_X,
-                        detectedMultiplierTag = "3X ELIXIR TAG DETECTED",
-                        autoDetectionStatus = "OCR: 3X Elixir Banner Identified (Regen 0.9s/bar)"
-                    )
-                }
-
-                // Opponent card deployment vision detection with Multi-Count protection
-                val opponentElixir = _state.value.opponentElixir
-                val candidateCards = ClashCardDatabase.allCards.filter { card ->
-                    val isAffordable = card.cost <= opponentElixir.roundToInt()
-                    val cooldownUntil = autoDetectedCardCooldowns[card.id] ?: 0L
-                    val isOffCooldown = now > cooldownUntil
-                    isAffordable && isOffCooldown
-                }
-
-                if (candidateCards.isNotEmpty() && opponentElixir >= 3.0f) {
-                    val detectedCard = candidateCards.random()
-                    // Put this specific card on deployment cooldown so it won't be multi-counted as it walks across screen
-                    autoDetectedCardCooldowns[detectedCard.id] = now + AUTO_DETECT_CARD_COOLDOWN_MS
-
-                    playOpponentCard(detectedCard, source = "Vision OCR (${detectedCard.name})")
-                    _state.value = _state.value.copy(
-                        autoDetectionStatus = "Auto-Deducted ${detectedCard.name} (-${detectedCard.cost} Elixir • Multi-Count Guard Active)"
-                    )
-                }
             }
         }
     }

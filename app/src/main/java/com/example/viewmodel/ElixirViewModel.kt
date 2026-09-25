@@ -3,6 +3,7 @@ package com.example.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.ElixirApplication
 import com.example.elixir.CardCycleStatus
 import com.example.elixir.CardPlayEvent
 import com.example.elixir.ElixirEngine
@@ -28,7 +29,7 @@ enum class AppNavTab(val label: String) {
 
 class ElixirViewModel(application: Application) : AndroidViewModel(application) {
 
-    val engine = ElixirEngine(viewModelScope, application)
+    val engine: ElixirEngine = (application as? ElixirApplication)?.engine ?: ElixirEngine(viewModelScope, application)
     val state: StateFlow<ElixirTrackerState> = engine.state
 
     private val _currentTab = MutableStateFlow(AppNavTab.LIVE_MATCH)
@@ -74,6 +75,10 @@ class ElixirViewModel(application: Application) : AndroidViewModel(application) 
         _showFloatingHudPreview.value = show
     }
 
+    fun setScreenCaptureActive(active: Boolean) {
+        engine.setMediaProjectionActive(active)
+    }
+
     // Engine forwarding actions
     fun startMatch() = engine.startMatch()
     fun pauseOrResume() = engine.pauseOrResumeMatch()
@@ -84,7 +89,6 @@ class ElixirViewModel(application: Application) : AndroidViewModel(application) 
     fun undoLastCardPlay() = engine.undoLastCardPlay()
     fun adjustOpponent(delta: Float) = engine.adjustOpponentElixir(delta)
     fun adjustUser(delta: Float) = engine.adjustUserElixir(delta)
-    fun toggleAutoDetection(enabled: Boolean) = engine.toggleAutoDetection(enabled)
     fun setOverlayPermission(granted: Boolean) = engine.setOverlayPermissionGranted(granted)
     fun setHaptics(enabled: Boolean) = engine.setHapticEnabled(enabled)
     fun setAutoStart(enabled: Boolean) = engine.setAutoStartOnFirstPlay(enabled)
