@@ -3,6 +3,6 @@
     <item
         android:width="66dp"
         android:height="66dp"
-        android:drawable="@drawable/radar_icon_1790347790409"
+        android:drawable="@drawable/ic_elixir_pro_icon"
         android:gravity="center" />
 </layer-list>

@@ -6,27 +6,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val DarkColorScheme = darkColorScheme(
-    primary = StudioCyan,
-    onPrimary = Color.Black,
-    primaryContainer = Color(0xFF0C4A6E),
-    onPrimaryContainer = Color(0xFFBAE6FD),
-    secondary = StudioIndigo,
+    primary = ElixirBright,
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF4C0519),
+    onPrimaryContainer = Color(0xFFFFD1DC),
+    secondary = GoldAccent,
     onSecondary = Color.Black,
-    secondaryContainer = Color(0xFF312E81),
-    onSecondaryContainer = Color(0xFFE0E7FF),
-    tertiary = StudioEmerald,
+    secondaryContainer = Color(0xFF451A03),
+    onSecondaryContainer = Color(0xFFFEF3C7),
+    tertiary = PositiveGreen,
     onTertiary = Color.Black,
-    background = StudioDarkBg,
+    background = EsportsSlate,
     onBackground = DarkTextPrimary,
-    surface = StudioDarkBg,
+    surface = EsportsSurface,
     onSurface = DarkTextPrimary,
-    surfaceVariant = StudioDarkSurface,
+    surfaceVariant = EsportsCard,
     onSurfaceVariant = DarkTextSecondary,
-    surfaceContainer = StudioDarkSurface,
-    surfaceContainerHigh = StudioDarkSurfaceHigh,
-    surfaceContainerLow = Color(0xFF0D1320),
-    outline = StudioDarkBorder,
-    error = StudioRose,
+    surfaceContainer = EsportsSurface,
+    surfaceContainerHigh = EsportsCard,
+    surfaceContainerLow = Color(0xFF080C14),
+    outline = EsportsBorder,
+    error = DeficitRed,
     onError = Color.White
 )
 
@@ -42,4 +42,3 @@ fun MyApplicationTheme(
         content = content
     )
 }
-

@@ -1,11 +1,12 @@
 package com.example
 
+import android.app.Application
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
-import com.example.model.DeviceType
-import com.example.model.NearbyDevice
-import com.example.ui.components.DeviceListView
+import androidx.test.core.app.ApplicationProvider
+import com.example.ui.elixir.ElixirMainScreen
 import com.example.ui.theme.MyApplicationTheme
+import com.example.viewmodel.ElixirViewModel
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Rule
@@ -24,31 +25,13 @@ class GreetingScreenshotTest {
 
   @Test
   fun greeting_screenshot() {
-    val sampleDevices = listOf(
-      NearbyDevice(
-        id = "C4:29:96:A1:B2:10",
-        rawName = "MacBook Pro",
-        customAlias = "Ben's Workstation",
-        deviceType = DeviceType.BLUETOOTH_LE,
-        rssi = -55,
-        bearingDegrees = 30f
-      ),
-      NearbyDevice(
-        id = "A0:32:89:FE:44:22",
-        rawName = "Home_Mesh_5G",
-        customAlias = "Living Room Router",
-        deviceType = DeviceType.WIFI_AP,
-        rssi = -62,
-        bearingDegrees = 180f
-      )
-    )
+    val app = ApplicationProvider.getApplicationContext<Application>()
+    val viewModel = ElixirViewModel(app)
 
     composeTestRule.setContent {
       MyApplicationTheme {
-        DeviceListView(
-          devices = sampleDevices,
-          onSelectDevice = {},
-          onOpenRename = {}
+        ElixirMainScreen(
+          viewModel = viewModel
         )
       }
     }

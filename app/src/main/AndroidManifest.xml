@@ -2,46 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Location (Required for BLE scan & Wi-Fi scanning proximity) -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-
-    <!-- Bluetooth Classic & Low Energy (Android 12+) -->
-    <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
-        android:usesPermissionFlags="neverForLocation"
-        tools:targetApi="s" />
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" tools:targetApi="s" />
-    <!-- Legacy Bluetooth for Android 11 and lower -->
-    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" android:maxSdkVersion="30" />
-
-    <!-- Wi-Fi State & Scanning -->
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES" tools:targetApi="tiramisu" />
-
-    <!-- Network & Internet -->
+    <!-- Network -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
-    <!-- Haptic feedback for radar ping detection -->
+    <!-- Haptic feedback for card taps and 10-elixir alert -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Overlay & Game Tracker Permissions -->
+    <!-- Overlay & Game Companion HUD Permissions -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" tools:targetApi="upside_down_cake" />
 
-    <!-- Hardware features -->
-    <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
-    <uses-feature android:name="android.hardware.bluetooth_le" android:required="false" />
-    <uses-feature android:name="android.hardware.wifi" android:required="false" />
-    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
-    <uses-feature android:name="android.hardware.sensor.compass" android:required="false" />
-    <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
-
     <application
-        android:name=".RadarApplication"
+        android:name=".ElixirApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"

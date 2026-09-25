@@ -1,6 +1,6 @@
 {
-  "name": "OmniHub",
-  "description": "Multi-utility suite featuring RF NearMap Radar, Clash Royale Elixir counter & overlay assistant, and Local AI model manager.",
+  "name": "Elixir Pro",
+  "description": "Professional Clash Royale elixir tracking assistant with live regeneration math, opponent cycle analysis, card cost deductions, and floating overlay support.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
